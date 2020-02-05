@@ -81,6 +81,7 @@ const Scriptures = (function () {
     let showLocation;
     let titleForBookChapter;
     let volumesGridContent;
+    let zoomToMarkers;
 
     //Private Methods
     addMarker = function (placename, latitude, longitude) {
@@ -488,12 +489,13 @@ const Scriptures = (function () {
                 addMarker(placename, latitude, longitude);
             }
         });
+
+        zoomToMarkers();
     };
 
     showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
-        // map.panTo({lat: Number(latitude), lng: Number(longitude)});
         console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading)
-        map.setZoom(10);
+        map.setZoom((viewAltitude / 500));
         map.setCenter({lat: Number(latitude), lng: Number(longitude)});
     }
 
@@ -522,6 +524,14 @@ const Scriptures = (function () {
         });
 
         return gridContent + BOTTOM_PADDING;
+    };
+
+    zoomToMarkers = function () {
+        var bounds = new google.maps.LatLngBounds();
+        for (var i = 0; i < gmMarkers.length; i++) {
+            bounds.extend(gmMarkers[i].getPosition());
+        }
+        map.fitBounds(bounds);
     };
 
     //Public API
