@@ -41,6 +41,9 @@ const Scriptures = (function () {
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
+    const STARTING_LAT = 31.777444;
+    const STARTING_LON = 35.234935;
+    const STARTING_ZOOM = 8;
     const TAG_VOLUME_HEADER = "h5";
     const URL_BOOKS = "https://scriptures.byu.edu/mapscrip/model/books.php";
     const URL_SCRIPTURES = "https://scriptures.byu.edu/mapscrip/mapgetscrip.php";
@@ -527,13 +530,16 @@ const Scriptures = (function () {
     };
 
     zoomToMarkers = function () {
-        if ( gmMarkers.length <= 0) {
+        if ( gmMarkers.length > 0) {
             var bounds = new google.maps.LatLngBounds();
 
             for (var i = 0; i < gmMarkers.length; i++) {
                 bounds.extend(gmMarkers[i].getPosition());
             }
             map.fitBounds(bounds);
+        } else {
+            map.panTo({lat: STARTING_LAT, lng: STARTING_LON});
+            map.setZoom(STARTING_ZOOM);
         }
     };
 
