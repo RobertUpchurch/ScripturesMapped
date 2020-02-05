@@ -55,6 +55,7 @@ const Scriptures = (function () {
     //Private Method Declarations
     let addMarker;
     let ajax;
+    let addNavigation;
     let bookChapterValid;
     let booksGrid;
     let booksGridContent;
@@ -93,6 +94,34 @@ const Scriptures = (function () {
 
         gmMarkers.push(marker);
     };
+
+    addNavigation = function (bookId, chapter) {
+        let navigation = " | ";
+        let nextLink = nextChapter(bookId, chapter);
+        let prevLink = previousChapter(bookId, chapter);
+
+        console.log(nextLink, prevLink)
+
+        if (prevLink !== undefined) {
+            navigation = htmlLink({
+                classKey: ``,
+                id: chapter,
+                hrefString: `#0:${prevLink[0]}:${prevLink[1]}`,
+                content: `< ${prevLink[2]}`
+            }) + navigation;
+        }
+
+        if (nextLink !== undefined) {
+            navigation += htmlLink({
+                classKey: ``,
+                id: chapter,
+                hrefString: `#0:${nextLink[0]}:${nextLink[1]}`,
+                content: `${nextLink[2]} >`
+            });
+        }
+
+        document.getElementById("navigation").innerHTML = navigation;
+    }
 
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
@@ -322,6 +351,7 @@ const Scriptures = (function () {
 
     navigateChapter = function (bookId, chapter) {
         ajax(encodedScripturesUrlParamaters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
+        addNavigation(bookId, chapter)
     };
 
     navigateHome = function (volumeId) {
@@ -345,10 +375,10 @@ const Scriptures = (function () {
 
             let nextBook = books[bookId + 1];
             if (nextBook !== undefined) {
-                let nextChapterValue = 0;
+                let nextChapterValue = 1;
 
                 if (nextBook.numChapters <= 0) {
-                    nextChapterValue = 1;
+                    nextChapterValue = 0;
                 }
 
                 return [
@@ -414,7 +444,7 @@ const Scriptures = (function () {
                 let prevChapterValue = prevBook.numChapters;
 
                 if (prevBook.numChapters <= 0) {
-                    prevChapterValue = 1;
+                    prevChapterValue = 0;
                 }
 
                 return [
@@ -460,8 +490,11 @@ const Scriptures = (function () {
         });
     };
 
-    showLocation = function (id, placename, latitude, longitude) {
-        map.panTo({lat: Number(latitude), lng: Number(longitude)})
+    showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
+        // map.panTo({lat: Number(latitude), lng: Number(longitude)});
+        console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading)
+        map.setZoom(10);
+        map.setCenter({lat: Number(latitude), lng: Number(longitude)});
     }
 
     titleForBookChapter = function (book, chapter) {
