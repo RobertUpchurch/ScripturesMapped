@@ -527,11 +527,14 @@ const Scriptures = (function () {
     };
 
     zoomToMarkers = function () {
-        var bounds = new google.maps.LatLngBounds();
-        for (var i = 0; i < gmMarkers.length; i++) {
-            bounds.extend(gmMarkers[i].getPosition());
+        if ( gmMarkers.length <= 0) {
+            var bounds = new google.maps.LatLngBounds();
+
+            for (var i = 0; i < gmMarkers.length; i++) {
+                bounds.extend(gmMarkers[i].getPosition());
+            }
+            map.fitBounds(bounds);
         }
-        map.fitBounds(bounds);
     };
 
     //Public API
