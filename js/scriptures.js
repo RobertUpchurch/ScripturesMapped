@@ -91,16 +91,27 @@ const Scriptures = (function () {
 
     //Private Methods
     addMarker = function (placename, latitude, longitude) {
-        
-        let marker = new google.maps.Marker({
-            position: {lat: Number(latitude), lng: Number(longitude)},
-            title: placename,
-            label: placename,
-            map,
-            animation: google.maps.Animation.DROP
+        let exists = false;
+        gmMarkers.forEach(function (marker) {
+            if (marker.position.lat() === Number(latitude) && marker.position.lng() === Number(longitude)) {
+                exists = true;
+                if (!marker.label.includes(placename)) {
+                    marker.title += `, ${placename}`;
+                    marker.label += `, ${placename}`;
+                }
+            }
         });
 
-        gmMarkers.push(marker);
+        if (!exists) {
+            let marker = new google.maps.Marker({
+                position: {lat: Number(latitude), lng: Number(longitude)},
+                title: placename,
+                label: placename,
+                map,
+                animation: google.maps.Animation.DROP
+            });
+            gmMarkers.push(marker);
+        }
     };
 
     addNavigation = function (bookId, chapter) {
