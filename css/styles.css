@@ -18,6 +18,16 @@ img {
     max-width: 100%;
 }
 
+.left {
+    position: absolute;
+    left: 1rem;
+}
+
+.right {
+    position: absolute;
+    right: 1rem;
+}
+
 #header {
     position: absolute;
     top: 0;

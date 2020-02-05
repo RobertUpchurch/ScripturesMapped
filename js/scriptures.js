@@ -88,6 +88,7 @@ const Scriptures = (function () {
         let marker = new google.maps.Marker({
             position: {lat: Number(latitude), lng: Number(longitude)},
             title: placename,
+            label: placename,
             map,
             animation: google.maps.Animation.DROP
         });
@@ -96,31 +97,29 @@ const Scriptures = (function () {
     };
 
     addNavigation = function (bookId, chapter) {
-        let navigation = " | ";
+        let navigation = document.getElementsByClassName("navheading")[0].innerHTML;
         let nextLink = nextChapter(bookId, chapter);
         let prevLink = previousChapter(bookId, chapter);
 
-        console.log(nextLink, prevLink)
-
         if (prevLink !== undefined) {
             navigation = htmlLink({
-                classKey: ``,
+                classKey: `left`,
                 id: chapter,
                 hrefString: `#0:${prevLink[0]}:${prevLink[1]}`,
-                content: `< ${prevLink[2]}`
-            }) + navigation;
+                content: `<`
+            }) + navigation
         }
 
         if (nextLink !== undefined) {
             navigation += htmlLink({
-                classKey: ``,
+                classKey: `right`,
                 id: chapter,
                 hrefString: `#0:${nextLink[0]}:${nextLink[1]}`,
-                content: `${nextLink[2]} >`
+                content: `>`
             });
         }
 
-        document.getElementById("navigation").innerHTML = navigation;
+        document.getElementsByClassName("navheading")[0].innerHTML = navigation;
     }
 
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
@@ -253,6 +252,8 @@ const Scriptures = (function () {
 
     getScripturesCallback = function (chapterHtml) {
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+        let ids = location.hash.slice(1).split(":");
+        addNavigation(Number(ids[1]), Number(ids[2]));
         setupMarkers();
     };
 
@@ -351,7 +352,6 @@ const Scriptures = (function () {
 
     navigateChapter = function (bookId, chapter) {
         ajax(encodedScripturesUrlParamaters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
-        addNavigation(bookId, chapter)
     };
 
     navigateHome = function (volumeId) {
