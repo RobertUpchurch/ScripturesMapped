@@ -10,13 +10,14 @@
     browser: true
     long: true
 */
-/*global console, XMLHttpRequest */
+/*global console, XMLHttpRequest, map, google */
 /*property
-    books, classKey, content, exec, forEach, fullName, getAttribute,
-    getElementById, gridName, hash, hrefString, id, init, innerHTML, length,
-    log, maxBookId, minBookId, numChapters, onHashChanged, onerror, onload,
-    open, parse, push, querySelectorAll, response, send, setMap, slice, split,
-    status, tocName
+    Animation, DROP, Marker, animation, books, classKey, clearTimeout, content,
+    exec, forEach, fullName, getAttribute, getElementById, google, gridName,
+    hash, hrefString, id, init, innerHTML, lat, length, lng, log, map, maps,
+    maxBookId, minBookId, numChapters, onHashChanged, onerror, onload, open,
+    parse, position, push, querySelectorAll, response, send, setMap, setTimeout,
+    slice, split, status, title, tocName
 */
 
 
@@ -36,6 +37,7 @@ const Scriptures = (function () {
     const INDEX_LONGITUDE = 4;
     const INDEX_PLACENAME = 2;
     const LAT_LON_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
+    const MAX_RETRY_DELAY = 5000;
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
@@ -47,6 +49,7 @@ const Scriptures = (function () {
     //Private Variables
     let books;
     let gmMarkers = [];
+    let retryDelay = 500;
     let volumes;
 
     //Private Method Declarations
@@ -74,12 +77,21 @@ const Scriptures = (function () {
     let onHashChanged;
     let previousChapter;
     let setupMarkers;
+    let showLocation;
     let titleForBookChapter;
     let volumesGridContent;
 
     //Private Methods
     addMarker = function (placename, latitude, longitude) {
-        console.log(placename, latitude, longitude);
+
+        let marker = new google.maps.Marker({
+            position: {lat: Number(latitude), lng: Number(longitude)},
+            title: placename,
+            map,
+            animation: google.maps.Animation.DROP
+        });
+
+        gmMarkers.push(marker);
     };
 
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
@@ -415,13 +427,24 @@ const Scriptures = (function () {
     };
 
     setupMarkers = function () {
+        if (window.google === undefined) {
+            let retryId = window.setTimeout(setupMarkers, retryDelay);
+
+            retryDelay += retryDelay;
+
+            if (retryDelay > MAX_RETRY_DELAY) {
+                window.clearTimeout(retryId);
+            }
+
+            return;
+        }
+
         if (gmMarkers.length > 0) {
             clearMarkers();
         }
 
         document.querySelectorAll("a[onclick^=\"showLocation(\"]").forEach(function (element) {
             let matches = LAT_LON_PARSER.exec(element.getAttribute("onclick"));
-
             if (matches) {
                 let placename = matches[INDEX_PLACENAME];
                 let latitude = matches[INDEX_LATITUDE];
@@ -432,10 +455,14 @@ const Scriptures = (function () {
                     placename += ` ${flag}`;
                 }
 
-                addMarker(placename, longitude, latitude);
+                addMarker(placename, latitude, longitude);
             }
         });
     };
+
+    showLocation = function (id, placename, latitude, longitude) {
+        map.panTo({lat: Number(latitude), lng: Number(longitude)})
+    }
 
     titleForBookChapter = function (book, chapter) {
         if (book !== undefined) {
@@ -467,6 +494,7 @@ const Scriptures = (function () {
     //Public API
     return {
         init,
-        onHashChanged
+        onHashChanged,
+        showLocation
     };
 }());

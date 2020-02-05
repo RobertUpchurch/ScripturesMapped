@@ -24,6 +24,9 @@
         </div>
     </body>
     <script>
+        let showLocation;
+        let map;
+
         function ready(fn) {
             if (document.readyState != 'loading') {
                 fn();
@@ -33,8 +36,18 @@
         }
 
         ready(function () {
-            Scriptures.init(() => { Scriptures.onHashChanged(); })
-            window.addEventListener("hashchange", Scriptures.onHashChanged)
+            Scriptures.init(() => { Scriptures.onHashChanged(); });
+            window.addEventListener("hashchange", Scriptures.onHashChanged);
+            showLocation = Scriptures.showLocation;
         });
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 31.777444, lng: 35.234935},
+                zoom: 8
+            });
+        };
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6LA64KNvRxeBmFRLXaNVUtA4TpHJgJds&callback=initMap" 
+        async defer></script>
 </html>
