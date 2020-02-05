@@ -12,12 +12,14 @@
 */
 /*global console, XMLHttpRequest, map, google */
 /*property
-    Animation, DROP, Marker, animation, books, classKey, clearTimeout, content,
-    exec, forEach, fullName, getAttribute, getElementById, google, gridName,
-    hash, hrefString, id, init, innerHTML, lat, length, lng, log, map, maps,
-    maxBookId, minBookId, numChapters, onHashChanged, onerror, onload, open,
-    parse, position, push, querySelectorAll, response, send, setMap, setTimeout,
-    slice, split, status, title, tocName
+    Animation, DROP, LatLngBounds, Marker, animation, books, classKey,
+    clearTimeout, content, exec, extend, fitBounds, forEach, fullName,
+    getAttribute, getElementById, getElementsByClassName, getPosition, google,
+    gridName, hash, hrefString, id, init, innerHTML, label, lat, length, lng,
+    log, map, maps, maxBookId, minBookId, numChapters, onHashChanged, onerror,
+    onload, open, panTo, parse, position, push, querySelectorAll, response,
+    send, setCenter, setMap, setTimeout, setZoom, showLocation, slice, split,
+    status, title, tocName
 */
 
 
@@ -36,6 +38,7 @@ const Scriptures = (function () {
     const INDEX_LATITUDE = 3;
     const INDEX_LONGITUDE = 4;
     const INDEX_PLACENAME = 2;
+    const SINGLE_MARKER_ZOOM = 10;
     const LAT_LON_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
     const MAX_RETRY_DELAY = 5000;
     const REQUEST_GET = "GET";
@@ -88,7 +91,7 @@ const Scriptures = (function () {
 
     //Private Methods
     addMarker = function (placename, latitude, longitude) {
-
+        
         let marker = new google.maps.Marker({
             position: {lat: Number(latitude), lng: Number(longitude)},
             title: placename,
@@ -111,7 +114,7 @@ const Scriptures = (function () {
                 id: chapter,
                 hrefString: `#0:${prevLink[0]}:${prevLink[1]}`,
                 content: `<`
-            }) + navigation
+            }) + navigation;
         }
 
         if (nextLink !== undefined) {
@@ -124,7 +127,7 @@ const Scriptures = (function () {
         }
 
         document.getElementsByClassName("navheading")[0].innerHTML = navigation;
-    }
+    };
 
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
@@ -497,10 +500,10 @@ const Scriptures = (function () {
     };
 
     showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
-        console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading)
-        map.setZoom((viewAltitude / 500));
+        console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
+        map.setZoom(viewAltitude / 500);
         map.setCenter({lat: Number(latitude), lng: Number(longitude)});
-    }
+    };
 
     titleForBookChapter = function (book, chapter) {
         if (book !== undefined) {
@@ -530,13 +533,18 @@ const Scriptures = (function () {
     };
 
     zoomToMarkers = function () {
-        if ( gmMarkers.length > 0) {
-            var bounds = new google.maps.LatLngBounds();
+        if (gmMarkers.length > 0) {
+            let bounds = new google.maps.LatLngBounds();
 
-            for (var i = 0; i < gmMarkers.length; i++) {
-                bounds.extend(gmMarkers[i].getPosition());
-            }
+            gmMarkers.forEach(function (marker) {
+                bounds.extend(marker.getPosition());
+            });
+
             map.fitBounds(bounds);
+
+            if (gmMarkers.length === 1) {
+                map.setZoom(SINGLE_MARKER_ZOOM);
+            }
         } else {
             map.panTo({lat: STARTING_LAT, lng: STARTING_LON});
             map.setZoom(STARTING_ZOOM);
