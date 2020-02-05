@@ -13,9 +13,9 @@
 /*global console, XMLHttpRequest */
 /*property
     books, classKey, content, forEach, fullName, getElementById, gridName, hash,
-    href, hrefString, id, init, innerHTML, length, log, maxBookId, minBookId,
+    hrefString, id, init, innerHTML, length, log, maxBookId, minBookId,
     numChapters, onHashChanged, onerror, onload, open, parse, push, response,
-    send, slice, split, status
+    send, slice, split, status, tocName
 */
 
 
@@ -61,7 +61,10 @@ const Scriptures = (function () {
     let navigateBook;
     let navigateChapter;
     let navigateHome;
+    let nextChapter;
     let onHashChanged;
+    let previousChapter;
+    let titleForBookChapter;
     let volumesGridContent;
 
     //Private Methods
@@ -70,7 +73,11 @@ const Scriptures = (function () {
         request.open(REQUEST_GET, url, true);
         request.onload = function () {
             if (request.status >= REQUEST_STATUS_OK && request.status < REQUEST_STATUS_ERROR) {
-                let data = skipJsonParse ? request.response : JSON.parse(request.response);
+                let data = (
+                    skipJsonParse
+                    ? request.response
+                    : JSON.parse(request.response)
+                );
                 if (typeof successCallback === "function") {
                     successCallback(data);
                 }
@@ -290,6 +297,35 @@ const Scriptures = (function () {
         });
     };
 
+    nextChapter = function (bookId, chapter) {
+        let book = books[bookId];
+
+        if (book !== undefined) {
+            if (chapter < book.numChapters) {
+                return [
+                    bookId,
+                    chapter + 1,
+                    titleForBookChapter(book, chapter + 1)
+                ];
+            }
+
+            let nextBook = books[bookId + 1];
+            if (nextBook !== undefined) {
+                let nextChapterValue = 0;
+
+                if (nextBook.numChapters <= 0) {
+                    nextChapterValue = 1;
+                }
+
+                return [
+                    nextBook.id,
+                    1,
+                    titleForBookChapter(nextBook, nextChapterValue)
+                ];
+            }
+        }
+    };
+
     onHashChanged = function () {
         let ids = [];
 
@@ -324,6 +360,16 @@ const Scriptures = (function () {
                     }
                 }
             }
+        }
+    };
+
+    titleForBookChapter = function (book, chapter) {
+        if (book !== undefined) {
+            if (chapter > 0) {
+                return `${book.tocName} ${chapter}`;
+            }
+
+            return book.tocName;
         }
     };
 
